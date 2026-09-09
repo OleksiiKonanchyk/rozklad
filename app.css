@@ -138,3 +138,37 @@ body {
   opacity: .4; cursor: pointer;
 }
 .tabs button[aria-selected="true"] { opacity: 1; box-shadow: inset 0 2px 0 var(--ink); }
+
+.toggle { display: flex; gap: 7px; padding: 12px 15px 8px; }
+.toggle button {
+  flex: 1; padding: 9px 0; border: 0; border-radius: 9px;
+  background: rgba(20, 22, 26, .06);
+  font: 700 12px/1 system-ui, sans-serif; color: var(--ink);
+  opacity: .45; cursor: pointer;
+}
+.toggle button[aria-pressed="true"] { opacity: 1; }
+.toggle button[aria-pressed="true"][data-color="yellow"] { background: var(--yellow); color: var(--yellow-ink); }
+.toggle button[aria-pressed="true"][data-color="blue"] { background: var(--blue); color: var(--blue-ink); }
+
+.day {
+  margin: 0 15px 10px;
+  border: 1px solid var(--hair);
+  border-radius: 13px;
+  overflow: hidden;
+}
+.day--today { border: 2px solid var(--ink); }
+.day__head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  padding: 8px 12px; background: rgba(20, 22, 26, .035);
+}
+.day--today .day__head { background: var(--yellow-tint); }
+.day--today.day--blue .day__head { background: var(--blue-tint); }
+.day__name { font-size: 13px; font-weight: 700; }
+.day__hours { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.day__list { margin: 0; padding: 6px 12px 9px; list-style: none; }
+.day__list li { display: flex; gap: 10px; padding: 3px 0; font-size: 13px; }
+.day__list li > i {
+  font-style: normal; width: 38px; flex: none;
+  color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.day__empty { padding: 8px 12px 10px; font-size: 12.5px; color: var(--muted); }

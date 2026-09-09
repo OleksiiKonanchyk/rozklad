@@ -1,4 +1,9 @@
-import { toHHMM, humanMinutes, weekdayName, formatDateLong, parseISO } from './format.js';
+import {
+  toHHMM, humanMinutes, weekdayName, formatDateLong, parseISO,
+  mondayOf, addDays, isoDate,
+} from './format.js';
+import { weekColorFor } from './calendar.js';
+import { lessonsFor } from './day.js';
 
 export function escapeHtml(text) {
   return String(text)
@@ -225,4 +230,70 @@ export function renderToday(state) {
     return topBar(state) + nowBox(state) + tomorrowCard(state.nextDay);
   }
   return topBar(state) + nowBox(state) + timeline(state) + tomorrowCard(state.nextDay);
+}
+
+const DAY_NAMES = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця'];
+
+function weekToggle(shownColor, actualColor) {
+  const button = (color, text) => {
+    const suffix = color === actualColor ? ' · цей' : '';
+    return `<button data-color="${color}" aria-pressed="${color === shownColor}">${text}${suffix}</button>`;
+  };
+  return `<div class="toggle">${button('yellow', 'Жовтий')}${button('blue', 'Синій')}</div>`;
+}
+
+function dayCard(date, lessons, isToday, color) {
+  const classes = [
+    'day',
+    isToday ? 'day--today' : '',
+    isToday && color === 'blue' ? 'day--blue' : '',
+  ].filter(Boolean).join(' ');
+
+  const name = DAY_NAMES[date.getDay() - 1] + (isToday ? ' · сьогодні' : '');
+
+  if (lessons.length === 0) {
+    return `
+      <div class="${classes}">
+        <div class="day__head"><span class="day__name">${name}</span></div>
+        <div class="day__empty">уроків немає</div>
+      </div>`;
+  }
+
+  const hours = `${toHHMM(lessons[0].from)} – ${toHHMM(lessons.at(-1).to)}`;
+  const items = lessons
+    .map((l) => `<li><i>${toHHMM(l.from)}</i><span>${escapeHtml(l.subject)}</span></li>`)
+    .join('');
+
+  return `
+    <div class="${classes}">
+      <div class="day__head">
+        <span class="day__name">${name}</span>
+        <span class="day__hours">${hours}</span>
+      </div>
+      <ul class="day__list">${items}</ul>
+    </div>`;
+}
+
+export function renderWeek(data, state, shownColor) {
+  const thisMonday = mondayOf(state.date);
+  const actualColor = weekColorFor(thisMonday, data);
+  const color = shownColor ?? actualColor;
+  // Тиждень протилежного кольору — це рівно наступний календарний тиждень.
+  const monday = color === actualColor ? thisMonday : addDays(thisMonday, 7);
+  const friday = addDays(monday, 4);
+  const todayIso = isoDate(state.date);
+  const range = `тиждень ${formatDateLong(monday)} – ${formatDateLong(friday)}`;
+
+  const bar = `
+    <div class="bar bar--${color}">
+      <span>${escapeHtml(range)}</span>
+      <span>${color === 'yellow' ? 'жовтий' : 'синій'}</span>
+    </div>`;
+
+  const cards = [0, 1, 2, 3, 4].map((offset) => {
+    const date = addDays(monday, offset);
+    return dayCard(date, lessonsFor(date, data), isoDate(date) === todayIso, color);
+  }).join('');
+
+  return bar + weekToggle(color, actualColor) + cards;
 }
