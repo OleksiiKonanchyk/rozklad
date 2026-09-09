@@ -55,12 +55,19 @@ describe('lessonsFor', () => {
     expect(lessonsFor(new Date(2026, 9, 28), data)).toEqual([]);
   });
 
-  it('модуль I не використовується в жодному дні', () => {
-    for (let d = new Date(2026, 8, 7); d < new Date(2026, 8, 19); d.setDate(d.getDate() + 1)) {
-      if (d.getDay() === 0 || d.getDay() === 6) continue; // вихідні — уроків немає
-      const lessons = lessonsFor(new Date(d), data);
-      expect(lessons.length).toBeGreaterThan(0);
-      expect(lessons.some((l) => l.module === 1)).toBe(false);
-    }
+  // У поточному розкладі першого модуля немає, але після зимових канікул
+  // він може зʼявитися. Перевіряємо саме це — що додаток його підхопить.
+  it('перший модуль обробляється, якщо зʼявиться в розкладі', () => {
+    const patched = structuredClone(data);
+    patched.schedules[0].weeks.yellow.wed['1'] = {
+      subject: 'Українська мова',
+      teachers: [{ name: 'Голінько Ю.А.', room: '117' }],
+    };
+
+    const lessons = lessonsFor(new Date(2026, 8, 9), patched);
+    expect(lessons.map((l) => l.module)).toEqual([1, 2, 3]);
+    expect(lessons[0].from).toBe(480);              // день починається о 8:00
+    expect(lessons[0].miniModules[0].to).toBe(510); // перший міні-модуль до 8:30
+    expect(lessons[0].subject).toBe('Українська мова');
   });
 });
