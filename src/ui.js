@@ -277,9 +277,18 @@ function dayCard(date, lessons, isToday, color) {
 export function renderWeek(data, state, shownColor) {
   const thisMonday = mondayOf(state.date);
   const actualColor = weekColorFor(thisMonday, data);
-  const color = shownColor ?? actualColor;
-  // Тиждень протилежного кольору — це рівно наступний календарний тиждень.
-  const monday = color === actualColor ? thisMonday : addDays(thisMonday, 7);
+  const wanted = shownColor ?? actualColor;
+
+  // Зазвичай тиждень протилежного кольору — наступний, але weekOverrides може
+  // збити чергування, тому шукаємо найближчий понеділок потрібного кольору.
+  let monday = thisMonday;
+  for (let i = 0; i < 8; i++) {
+    if (weekColorFor(monday, data) === wanted) break;
+    monday = addDays(monday, 7);
+  }
+  // Колір беремо з показаного тижня, а не з побажання: так заголовок і вміст
+  // не можуть розійтися, навіть якщо потрібного кольору попереду не знайшлось.
+  const color = weekColorFor(monday, data);
   const friday = addDays(monday, 4);
   const todayIso = isoDate(state.date);
   const range = `тиждень ${formatDateLong(monday)} – ${formatDateLong(friday)}`;
