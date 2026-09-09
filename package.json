@@ -1,0 +1,12 @@
+{
+  "name": "rozklad",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "TZ=Europe/Kyiv vitest run",
+    "test:watch": "TZ=Europe/Kyiv vitest"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}
