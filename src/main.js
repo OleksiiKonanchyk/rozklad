@@ -1,6 +1,6 @@
 import { loadSchedule } from './data.js';
 import { stateAt } from './state.js';
-import { renderToday } from './ui.js';
+import { renderToday, escapeHtml } from './ui.js';
 
 const TICK_MS = 10000;
 const root = document.getElementById('app');
@@ -19,7 +19,7 @@ async function start() {
   try {
     data = await loadSchedule();
   } catch (error) {
-    root.innerHTML = `<p class="error">${error.message}</p>`;
+    root.innerHTML = `<p class="error">${escapeHtml(error.message)}</p>`;
     return;
   }
 
