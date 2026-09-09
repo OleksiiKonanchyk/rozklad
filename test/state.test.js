@@ -35,6 +35,30 @@ describe('під час уроку', () => {
   });
 });
 
+describe('endsDay', () => {
+  it('останній міні-модуль останнього модуля дня — endsDay: true', () => {
+    const s = stateAt(wed(13, 30), data);
+    expect(s.kind).toBe('lesson');
+    expect(s.endsDay).toBe(true);
+  });
+
+  it('не останній міні-модуль — endsDay: false', () => {
+    const s = stateAt(wed(10, 40), data);
+    expect(s.kind).toBe('lesson');
+    expect(s.endsDay).toBe(false);
+  });
+
+  it('останній міні-модуль модуля, який не останній у дні — endsDay: false', () => {
+    // 11:20 — третій міні-модуль модуля II, а модуль III ще попереду
+    const s = stateAt(wed(11, 20), data);
+    expect(s.kind).toBe('lesson');
+    expect(s.miniModule.n).toBe(3);
+    expect(s.miniModule.of).toBe(3);
+    expect(s.current.subject).toBe('Математика');
+    expect(s.endsDay).toBe(false);
+  });
+});
+
 describe('перерви', () => {
   it('10:27 — коротка перерва, той самий предмет', () => {
     const s = stateAt(wed(10, 27), data);

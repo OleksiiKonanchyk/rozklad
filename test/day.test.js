@@ -57,7 +57,9 @@ describe('lessonsFor', () => {
 
   it('модуль I не використовується в жодному дні', () => {
     for (let d = new Date(2026, 8, 7); d < new Date(2026, 8, 19); d.setDate(d.getDate() + 1)) {
+      if (d.getDay() === 0 || d.getDay() === 6) continue; // вихідні — уроків немає
       const lessons = lessonsFor(new Date(d), data);
+      expect(lessons.length).toBeGreaterThan(0);
       expect(lessons.some((l) => l.module === 1)).toBe(false);
     }
   });

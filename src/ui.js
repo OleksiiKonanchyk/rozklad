@@ -10,7 +10,8 @@ export function escapeHtml(text) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 export function breakLabel(gap) {
@@ -25,6 +26,11 @@ function rooms(teachers) {
     .join('<br>');
 }
 
+// Компактний варіант для тижня: там питання «куди йти», а не «хто веде».
+function roomList(teachers) {
+  return `каб. ${teachers.map((t) => escapeHtml(t.room)).join(' і ')}`;
+}
+
 function topBar(state) {
   const modifier = state.color ? `bar--${state.color}` : 'bar--none';
   const colorName = state.color === 'yellow' ? 'жовтий'
@@ -37,7 +43,9 @@ function nowBox(state) {
   const parts = {
     'lesson': () => ({
       cls: `now--${state.color}`,
-      label: `Зараз · до перерви ${humanMinutes(state.minutesLeft)}`,
+      label: state.endsDay
+        ? `Зараз · до кінця дня ${humanMinutes(state.minutesLeft)}`
+        : `Зараз · до перерви ${humanMinutes(state.minutesLeft)}`,
       subject: state.current.subject,
       room: rooms(state.current.teachers),
     }),
@@ -55,9 +63,11 @@ function nowBox(state) {
     }),
     'before-school': () => ({
       cls: `now--${state.color}`,
-      label: `Початок через ${humanMinutes(state.minutesLeft)}`,
+      label: state.minutesLeft <= 90
+        ? `Початок о ${toHHMM(state.upcoming.from)} · через ${humanMinutes(state.minutesLeft)}`
+        : `Сьогодні початок о ${toHHMM(state.upcoming.from)}`,
       subject: state.upcoming.subject,
-      room: `о ${toHHMM(state.upcoming.from)} · ${rooms(state.upcoming.teachers)}`,
+      room: rooms(state.upcoming.teachers),
     }),
     'after-school': () => ({
       cls: `now--${state.color}`,
@@ -261,7 +271,7 @@ function dayCard(date, lessons, isToday, color) {
 
   const hours = `${toHHMM(lessons[0].from)} – ${toHHMM(lessons.at(-1).to)}`;
   const items = lessons
-    .map((l) => `<li><i>${toHHMM(l.from)}</i><span>${escapeHtml(l.subject)}</span></li>`)
+    .map((l) => `<li><i>${toHHMM(l.from)}</i><span>${escapeHtml(l.subject)}</span><b>${roomList(l.teachers)}</b></li>`)
     .join('');
 
   return `
@@ -282,7 +292,7 @@ export function renderWeek(data, state, shownColor) {
   // Зазвичай тиждень протилежного кольору — наступний, але weekOverrides може
   // збити чергування, тому шукаємо найближчий понеділок потрібного кольору.
   let monday = thisMonday;
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i <= 8; i++) {
     if (weekColorFor(monday, data) === wanted) break;
     monday = addDays(monday, 7);
   }

@@ -24,6 +24,11 @@ describe('weekColorFor', () => {
     expect(weekColorFor(new Date(2026, 10, 2), data)).toBe('yellow');
   });
 
+  it('тиждень перед опорним рахується назад по формулі', () => {
+    expect(weekColorFor(new Date(2026, 7, 31), data)).toBe('blue');
+    expect(weekColorFor(new Date(2026, 7, 24), data)).toBe('yellow');
+  });
+
   it('weekOverrides перекриває формулу', () => {
     const patched = { ...data, weekOverrides: { '2026-11-02': 'blue' } };
     expect(weekColorFor(new Date(2026, 10, 2), patched)).toBe('blue');

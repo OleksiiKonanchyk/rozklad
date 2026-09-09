@@ -71,6 +71,8 @@ export function stateAt(now, data) {
           };
         }
         if (t < miniModule.to) {
+          const isLastLesson = lesson.module === lessons.at(-1).module;
+          const endsDay = isLastLesson && miniModule.n === miniModule.of;
           return {
             ...base,
             kind: 'lesson',
@@ -78,6 +80,7 @@ export function stateAt(now, data) {
             miniModule,
             minutesLeft: miniModule.to - t,
             minutesElapsed: t - miniModule.from,
+            endsDay,
           };
         }
       }

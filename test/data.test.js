@@ -43,20 +43,61 @@ describe('validateSchedule', () => {
     const broken = { ...real, weekOverrides: { '2026-11-02': 'green' } };
     expect(() => validateSchedule(broken)).toThrow(/yellow/);
   });
+
+  it('падає, якщо validFrom не понеділок', () => {
+    const broken = structuredClone(real);
+    broken.schedules[0].validFrom = '2026-09-01';
+    expect(() => validateSchedule(broken)).toThrow(/validFrom "2026-09-01" має бути понеділком/);
+  });
+
+  it('падає, якщо модуль у розкладі відсутній серед "modules"', () => {
+    const broken = structuredClone(real);
+    broken.schedules[0].weeks.yellow.mon['9'] =
+      { subject: 'Позашкільна', teachers: [{ name: 'Хтось', room: '1' }] };
+    expect(() => validateSchedule(broken)).toThrow(/якого немає в "modules"/);
+  });
+
+  it('падає, якщо в записі розкладу немає "subject"', () => {
+    const broken = structuredClone(real);
+    delete broken.schedules[0].weeks.yellow.mon['2'].subject;
+    expect(() => validateSchedule(broken)).toThrow(/немає поля "subject"/);
+  });
+
+  it('падає, якщо "teachers" порожній', () => {
+    const broken = structuredClone(real);
+    broken.schedules[0].weeks.yellow.mon['2'].teachers = [];
+    expect(() => validateSchedule(broken)).toThrow(/порожній або відсутній "teachers"/);
+  });
+
+  it('падає, якщо "teachers" відсутній', () => {
+    const broken = structuredClone(real);
+    delete broken.schedules[0].weeks.yellow.mon['2'].teachers;
+    expect(() => validateSchedule(broken)).toThrow(/порожній або відсутній "teachers"/);
+  });
+
+  it('падає, якщо "holidays" не масив', () => {
+    const broken = { ...real, holidays: {} };
+    expect(() => validateSchedule(broken)).toThrow(/"holidays" має бути масивом/);
+  });
+
+  it('падає, якщо "terms" не масив', () => {
+    const broken = { ...real, terms: {} };
+    expect(() => validateSchedule(broken)).toThrow(/"terms" має бути масивом/);
+  });
 });
 
 describe('scheduleFor', () => {
   it('бере єдиний запис, коли він один', () => {
-    expect(scheduleFor(new Date(2026, 8, 9), real).validFrom).toBe('2026-09-01');
+    expect(scheduleFor(new Date(2026, 8, 9), real).validFrom).toBe('2026-08-31');
   });
 
   it('бере перший запис для дати, ранішої за всі validFrom', () => {
-    expect(scheduleFor(new Date(2026, 7, 20), real).validFrom).toBe('2026-09-01');
+    expect(scheduleFor(new Date(2026, 7, 20), real).validFrom).toBe('2026-08-31');
   });
 
   it('перемикається на новий розклад від його validFrom', () => {
     const data = twoSchedules();
-    expect(scheduleFor(new Date(2026, 11, 24), data).validFrom).toBe('2026-09-01');
+    expect(scheduleFor(new Date(2026, 11, 24), data).validFrom).toBe('2026-08-31');
     expect(scheduleFor(new Date(2027, 0, 11), data).validFrom).toBe('2027-01-11');
     expect(scheduleFor(new Date(2027, 2, 1), data).validFrom).toBe('2027-01-11');
   });

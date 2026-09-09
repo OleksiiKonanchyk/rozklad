@@ -26,19 +26,28 @@ async function start() {
   let view = 'today';
   let shownColor = null;   // null = показувати поточний тиждень
   let lastHtml = '';
+  let lastView = null;
 
   // Перемальовуємо лише тоді, коли розмітка справді змінилась, і зберігаємо
   // позицію прокрутки — інакше сторінка стрибала б угору щоразу за таймером.
+  // Помилка всередині рендеру (наприклад, зіпсований schedule.json) показує
+  // повідомлення замість того, щоб залишити сторінку на «Завантаження…» назавжди.
   function draw() {
-    const state = stateAt(new Date(), data);
-    const body = view === 'today'
-      ? renderToday(state)
-      : renderWeek(data, state, shownColor);
-    const html = body + tabs(view);
+    let html;
+    try {
+      const state = stateAt(new Date(), data);
+      const body = view === 'today'
+        ? renderToday(state)
+        : renderWeek(data, state, shownColor);
+      html = body + tabs(view);
+    } catch (error) {
+      html = `<p class="error">Помилка в розкладі: ${escapeHtml(error.message)}</p>`;
+    }
     if (html === lastHtml) return;
-    const scroll = window.scrollY;
+    const scroll = view === lastView ? window.scrollY : 0;
     root.innerHTML = html;
     lastHtml = html;
+    lastView = view;
     window.scrollTo(0, scroll);
   }
 
