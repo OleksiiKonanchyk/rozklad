@@ -180,3 +180,6 @@ body {
 
 .now__left { margin-top: 6px; font-size: 13px; font-weight: 600; }
 .now__left em { font-style: normal; font-weight: 400; color: var(--muted); }
+
+.empty__next .day__list { margin-top: 9px; padding: 0; text-align: left; }
+.day__home { color: var(--muted); }

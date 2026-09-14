@@ -221,15 +221,24 @@ function emptyScreen(state) {
   let next = '<div class="empty__next"><div class="now__label">навчальний рік закінчився</div></div>';
   if (state.nextDay) {
     const colorName = state.nextDay.color === 'yellow' ? 'жовтий' : 'синій';
-    const first = state.nextDay.lessons[0];
-    const detail = first
-      ? `${colorName} тиждень · з ${toHHMM(first.from)} — ${escapeHtml(first.subject)}`
-      : `${colorName} тиждень`;
+    const lessons = state.nextDay.lessons;
+    // Повний список, а не самий перший урок: після вихідних і канікул питання
+    // «що взяти з собою» важить більше, ніж «коли починається».
+    const items = lessons
+      .map((l) => `<li><i>${toHHMM(l.from)}</i><span>${escapeHtml(l.subject)}</span><b>${roomList(l.teachers)}</b></li>`)
+      .join('');
+    // Час початку видно в кожного уроку, а час, коли додому, — ні, тому окремо.
+    const list = lessons.length === 0 ? '' : `
+        <ul class="day__list">
+          ${items}
+          <li class="day__home"><i>${toHHMM(lessons.at(-1).to)}</i><span>додому</span></li>
+        </ul>`;
     next = `
       <div class="empty__next">
         <div class="now__label">у школу знову</div>
         <div class="empty__next-title">${escapeHtml(weekdayName(state.nextDay.date))}, ${formatDateLong(state.nextDay.date)}</div>
-        <div class="tomorrow__list">${detail}</div>
+        <div class="tomorrow__list">${colorName} тиждень</div>
+        ${list}
       </div>`;
   }
 
