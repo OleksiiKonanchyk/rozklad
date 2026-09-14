@@ -14,10 +14,11 @@ export function escapeHtml(text) {
     .replace(/'/g, '&#39;');
 }
 
+// Лише для перерв між модулями: усередині модуля перерва завжди маленька.
+// Довга діра в розкладі — це не перерва, а вікно, тож і зветься інакше.
 export function breakLabel(gap) {
   if (gap > 40) return 'Вікно';
-  if (gap >= 20) return 'Обідня перерва';
-  return 'Перерва';
+  return 'Велика перерва';
 }
 
 function rooms(teachers) {
@@ -51,14 +52,18 @@ function nowBox(state) {
     }),
     'break-inner': () => ({
       cls: 'now--pause',
-      label: `Перерва · ${humanMinutes(state.minutesLeft)}`,
+      label: `Маленька перерва ${humanMinutes(state.gap)}`,
       subject: `${state.current.subject} триває`,
+      left: `лишилось ${humanMinutes(state.minutesLeft)}`,
+      until: state.nextMiniModule.from,
       room: 'той самий кабінет',
     }),
     'break-outer': () => ({
       cls: 'now--pause',
-      label: `${breakLabel(state.gap)} · ${humanMinutes(state.minutesLeft)}`,
+      label: `${breakLabel(state.gap)} ${humanMinutes(state.gap)}`,
       subject: `Далі: ${state.upcoming.subject}`,
+      left: `лишилось ${humanMinutes(state.minutesLeft)}`,
+      until: state.upcoming.from,
       room: rooms(state.upcoming.teachers),
     }),
     'before-school': () => ({
@@ -79,11 +84,16 @@ function nowBox(state) {
 
   const build = parts[state.kind];
   if (!build) return '';
-  const { cls, label, subject, room } = build();
+  const { cls, label, subject, left, until, room } = build();
+  // Рядок із залишком є тільки в перерв: під час уроку залишок уже в заголовку.
+  const countdown = left
+    ? `<div class="now__left">${escapeHtml(left)} <em>· до ${toHHMM(until)}</em></div>`
+    : '';
   return `
     <div class="now ${cls}">
       <div class="now__label">${escapeHtml(label)}</div>
       <div class="now__subject">${escapeHtml(subject)}</div>
+      ${countdown}
       <div class="now__room">${room}</div>
     </div>`;
 }

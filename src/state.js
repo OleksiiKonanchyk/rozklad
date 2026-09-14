@@ -60,14 +60,19 @@ export function stateAt(now, data) {
     }
 
     if (t < lesson.to) {
-      for (const miniModule of lesson.miniModules) {
+      for (let j = 0; j < lesson.miniModules.length; j++) {
+        const miniModule = lesson.miniModules[j];
         if (t < miniModule.from) {
+          // Перший міні-модуль починається разом із модулем, тож перерва
+          // перед ним неможлива — попередній тут завжди є.
+          const previous = lesson.miniModules[j - 1];
           return {
             ...base,
             kind: 'break-inner',
             current: lesson,
             nextMiniModule: miniModule,
             minutesLeft: miniModule.from - t,
+            gap: miniModule.from - previous.to,
           };
         }
         if (t < miniModule.to) {
