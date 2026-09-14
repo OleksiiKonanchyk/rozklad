@@ -68,6 +68,12 @@ describe('перерви', () => {
     expect(s.minutesLeft).toBe(3);
   });
 
+  it('коротка перерва знає свою повну довжину', () => {
+    const s = stateAt(wed(10, 27), data);
+    expect(s.kind).toBe('break-inner');
+    expect(s.gap).toBe(5);
+  });
+
   it('11:45 — перерва між модулями завдовжки 25 хв', () => {
     const s = stateAt(wed(11, 45), data);
     expect(s.kind).toBe('break-outer');
