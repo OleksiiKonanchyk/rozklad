@@ -114,24 +114,30 @@ function miniModules(lesson, state) {
         <span>${mark}${ordinal(mm.n)} міні-модуль</span>
       </div>`);
 
-    if (isCurrent) {
-      const total = mm.to - mm.from;
-      const percent = Math.round((state.minutesElapsed / total) * 100);
-      rows.push(`<div class="mini__bar"><i style="width:${percent}%"></i></div>`);
-      rows.push(`<div class="mini__note">минуло ${humanMinutes(state.minutesElapsed)} із ${total}</div>`);
-    }
+    if (isCurrent) rows.push(progress(state.minutesElapsed, mm.to - mm.from));
 
     const next = lesson.miniModules[index + 1];
     if (next) {
       const gap = next.from - mm.to;
+      // Перерва, яка триває зараз, виділяється так само, як міні-модуль:
+      // інакше найпомітнішим лишався б наступний міні-модуль, який ще не почався.
+      const isNow = state.kind === 'break-inner' && state.nextMiniModule.n === next.n;
       rows.push(`
-        <div class="mini__row mini__row--break">
+        <div class="mini__row mini__row--break${isNow ? ' mini__row--current' : ''}">
           <span class="mini__time">${toHHMM(mm.to)}</span>
           <span>перерва ${humanMinutes(gap)}</span>
         </div>`);
+      if (isNow) rows.push(progress(gap - state.minutesLeft, gap));
     }
   });
   return `<div class="mini">${rows.join('')}</div>`;
+}
+
+// Смужка з підписом — однакова для міні-модуля й для перерви між ними.
+function progress(elapsed, total) {
+  const percent = Math.round((elapsed / total) * 100);
+  return `<div class="mini__bar"><i style="width:${percent}%"></i></div>`
+    + `<div class="mini__note">минуло ${humanMinutes(elapsed)} із ${total}</div>`;
 }
 
 function ordinal(n) {

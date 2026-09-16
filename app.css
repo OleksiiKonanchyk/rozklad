@@ -183,3 +183,5 @@ body {
 
 .empty__next .day__list { margin-top: 9px; padding: 0; text-align: left; }
 .day__home { color: var(--muted); }
+
+.mini__row--break.mini__row--current { color: var(--ink); font-size: 13px; }
