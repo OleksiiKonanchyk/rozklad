@@ -78,6 +78,14 @@ export function validateSchedule(raw) {
     }
   }
 
+  // Значки не обовʼязкові, але якщо є — мають бути рядками: інакше на екрані
+  // замість предмета зʼявиться "[object Object]".
+  for (const [subject, icon] of Object.entries(raw.subjectIcons ?? {})) {
+    if (typeof icon !== 'string') {
+      throw new Error(`schedule.json: subjectIcons["${subject}"] має бути рядком`);
+    }
+  }
+
   return raw;
 }
 

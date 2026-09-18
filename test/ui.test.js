@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { breakLabel, renderToday } from '../src/ui.js';
+import { breakLabel, renderToday, renderWeek } from '../src/ui.js';
 import { stateAt } from '../src/state.js';
 
 const data = JSON.parse(readFileSync(new URL('../schedule.json', import.meta.url)));
@@ -79,5 +79,17 @@ describe('велика перерва у стрічці дня', () => {
 
   it('видно, скільки великої перерви минуло', () => {
     expect(at(11, 45)).toContain('минуло 10 хвилин із 25');
+  });
+});
+
+describe('значки предметів', () => {
+  it('на екрані «Сьогодні» значок стоїть перед назвою', () => {
+    const html = renderToday(stateAt(new Date(2026, 8, 9, 10, 40), data));
+    expect(html).toMatch(/🔢<\/span>Математика/);
+  });
+
+  it('у тижневому розкладі — теж', () => {
+    const state = stateAt(new Date(2026, 8, 9, 10, 40), data);
+    expect(renderWeek(data, state, 'yellow')).toMatch(/🇬🇧<\/span>Англійська мова/);
   });
 });

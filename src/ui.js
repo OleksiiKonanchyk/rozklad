@@ -16,6 +16,13 @@ export function escapeHtml(text) {
 
 // Лише для перерв між модулями: усередині модуля перерва завжди маленька.
 // Довга діра в розкладі — це не перерва, а вікно, тож і зветься інакше.
+// Значок предмета перед його назвою. Emoji приходить із даних, тому
+// екрануємо його так само, як будь-який інший текст звідти.
+function withIcon(lesson, text = lesson.subject) {
+  const icon = lesson.icon ? `<span class="emoji">${escapeHtml(lesson.icon)}</span>` : '';
+  return icon + escapeHtml(text);
+}
+
 export function breakLabel(gap) {
   if (gap > 40) return 'Вікно';
   return 'Велика перерва';
@@ -47,13 +54,13 @@ function nowBox(state) {
       label: state.endsDay
         ? `Зараз · до кінця дня ${humanMinutes(state.minutesLeft)}`
         : `Зараз · до перерви ${humanMinutes(state.minutesLeft)}`,
-      subject: state.current.subject,
+      subjectHtml: withIcon(state.current),
       room: rooms(state.current.teachers),
     }),
     'break-inner': () => ({
       cls: 'now--pause',
       label: `Маленька перерва ${humanMinutes(state.gap)}`,
-      subject: `${state.current.subject} триває`,
+      subjectHtml: withIcon(state.current, `${state.current.subject} триває`),
       left: `лишилось ${humanMinutes(state.minutesLeft)}`,
       until: state.nextMiniModule.from,
       room: 'той самий кабінет',
@@ -61,7 +68,7 @@ function nowBox(state) {
     'break-outer': () => ({
       cls: 'now--pause',
       label: `${breakLabel(state.gap)} ${humanMinutes(state.gap)}`,
-      subject: `Далі: ${state.upcoming.subject}`,
+      subjectHtml: `Далі: ${withIcon(state.upcoming)}`,
       left: `лишилось ${humanMinutes(state.minutesLeft)}`,
       until: state.upcoming.from,
       room: rooms(state.upcoming.teachers),
@@ -71,20 +78,20 @@ function nowBox(state) {
       label: state.minutesLeft <= 90
         ? `Початок о ${toHHMM(state.upcoming.from)} · через ${humanMinutes(state.minutesLeft)}`
         : `Сьогодні початок о ${toHHMM(state.upcoming.from)}`,
-      subject: state.upcoming.subject,
+      subjectHtml: withIcon(state.upcoming),
       room: rooms(state.upcoming.teachers),
     }),
     'after-school': () => ({
       cls: `now--${state.color}`,
       label: 'На сьогодні все',
-      subject: 'Уроки скінчились',
+      subjectHtml: escapeHtml('Уроки скінчились'),
       room: state.endedAt === null ? 'сьогодні уроків не було' : `о ${toHHMM(state.endedAt)}`,
     }),
   };
 
   const build = parts[state.kind];
   if (!build) return '';
-  const { cls, label, subject, left, until, room } = build();
+  const { cls, label, subjectHtml, left, until, room } = build();
   // Рядок із залишком є тільки в перерв: під час уроку залишок уже в заголовку.
   const countdown = left
     ? `<div class="now__left">${escapeHtml(left)} <em>· до ${toHHMM(until)}</em></div>`
@@ -92,7 +99,7 @@ function nowBox(state) {
   return `
     <div class="now ${cls}">
       <div class="now__label">${escapeHtml(label)}</div>
-      <div class="now__subject">${escapeHtml(subject)}</div>
+      <div class="now__subject">${subjectHtml}</div>
       ${countdown}
       <div class="now__room">${room}</div>
     </div>`;
@@ -190,7 +197,7 @@ function lessonItem(lesson, state, active) {
         </div>
         <div class="tl-item__body">
           <div class="tl-item__time">${toHHMM(lesson.from)} – ${toHHMM(lesson.to)} · модуль ${roman(lesson.module)}</div>
-          <div class="tl-item__name">${escapeHtml(lesson.subject)}</div>
+          <div class="tl-item__name">${withIcon(lesson)}</div>
           <div class="tl-item__rooms">${rooms(lesson.teachers)}</div>
           ${isCurrent ? miniModules(lesson, state) : ''}
         </div>
@@ -242,12 +249,12 @@ function tomorrowCard(nextDay) {
   const label = `${when}, ${formatDateLong(nextDay.date)}`;
   const first = nextDay.lessons[0];
   const last = nextDay.lessons.at(-1);
-  const subjects = nextDay.lessons.map((l) => l.subject).join(' · ');
+  const subjects = nextDay.lessons.map((l) => withIcon(l)).join(' · ');
   return `
     <div class="tomorrow">
       <div class="tomorrow__label">${escapeHtml(label)}</div>
       <div class="tomorrow__hours">${toHHMM(first.from)} – ${toHHMM(last.to)}</div>
-      <div class="tomorrow__list">${escapeHtml(subjects)}</div>
+      <div class="tomorrow__list">${subjects}</div>
     </div>`;
 }
 
@@ -266,7 +273,7 @@ function emptyScreen(state) {
     // Повний список, а не самий перший урок: після вихідних і канікул питання
     // «що взяти з собою» важить більше, ніж «коли починається».
     const items = lessons
-      .map((l) => `<li><i>${toHHMM(l.from)}</i><span>${escapeHtml(l.subject)}</span><b>${roomList(l.teachers)}</b></li>`)
+      .map((l) => `<li><i>${toHHMM(l.from)}</i><span>${withIcon(l)}</span><b>${roomList(l.teachers)}</b></li>`)
       .join('');
     // Час початку видно в кожного уроку, а час, коли додому, — ні, тому окремо.
     const list = lessons.length === 0 ? '' : `
@@ -331,7 +338,7 @@ function dayCard(date, lessons, isToday, color) {
 
   const hours = `${toHHMM(lessons[0].from)} – ${toHHMM(lessons.at(-1).to)}`;
   const items = lessons
-    .map((l) => `<li><i>${toHHMM(l.from)}</i><span>${escapeHtml(l.subject)}</span><b>${roomList(l.teachers)}</b></li>`)
+    .map((l) => `<li><i>${toHHMM(l.from)}</i><span>${withIcon(l)}</span><b>${roomList(l.teachers)}</b></li>`)
     .join('');
 
   return `

@@ -2,6 +2,8 @@ import { toMinutes, dayKey } from './format.js';
 import { scheduleFor } from './data.js';
 import { weekColorFor, isSchoolDay } from './calendar.js';
 
+const DEFAULT_ICON = '📘';
+
 export function lessonsFor(date, data) {
   if (!isSchoolDay(date, data)) return [];
 
@@ -24,6 +26,9 @@ export function lessonsFor(date, data) {
       return {
         module,
         subject: entry.subject,
+        // Значок беремо з даних, щоб новий предмет у січні можна було додати
+        // в schedule.json, не чіпаючи код. Без свого значка — нейтральна книжка.
+        icon: data.subjectIcons?.[entry.subject] ?? DEFAULT_ICON,
         teachers: entry.teachers,
         from: miniModules[0].from,
         to: miniModules.at(-1).to,

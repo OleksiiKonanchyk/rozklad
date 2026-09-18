@@ -102,3 +102,16 @@ describe('scheduleFor', () => {
     expect(scheduleFor(new Date(2027, 2, 1), data).validFrom).toBe('2027-01-11');
   });
 });
+
+describe('validateSchedule: значки предметів', () => {
+  it('падає, якщо значок не рядок', () => {
+    const broken = { ...real, subjectIcons: { 'Математика': ['➗'] } };
+    expect(() => validateSchedule(broken)).toThrow(/subjectIcons/);
+  });
+
+  it('приймає розклад без subjectIcons — значки не обовʼязкові', () => {
+    const without = { ...real };
+    delete without.subjectIcons;
+    expect(() => validateSchedule(without)).not.toThrow();
+  });
+});
