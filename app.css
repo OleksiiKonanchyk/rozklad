@@ -194,3 +194,6 @@ body {
 .tl-item--break .tl-item__body { padding-bottom: 13px; }
 .tl-item--break .mini__bar { margin: 6px 0 4px; }
 .tl-item--break .mini__note { margin: 0; }
+
+.emoji { margin-right: 6px; font-style: normal; }
+.day__list .emoji, .tomorrow__list .emoji { margin-right: 5px; }

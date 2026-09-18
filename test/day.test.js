@@ -70,4 +70,15 @@ describe('lessonsFor', () => {
     expect(lessons[0].miniModules[0].to).toBe(510); // перший міні-модуль до 8:30
     expect(lessons[0].subject).toBe('Українська мова');
   });
+
+  it('кожен урок дістає значок свого предмета', () => {
+    const lessons = lessonsFor(new Date(2026, 8, 9), data);
+    expect(lessons.map((l) => l.icon)).toEqual(['🔢', '🇬🇧']);
+  });
+
+  it('предмет без свого значка дістає книжку', () => {
+    const patched = structuredClone(data);
+    patched.schedules[0].weeks.yellow.wed['2'].subject = 'Астрономія';
+    expect(lessonsFor(new Date(2026, 8, 9), patched)[0].icon).toBe('📘');
+  });
 });
