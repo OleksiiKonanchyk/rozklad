@@ -185,3 +185,12 @@ body {
 .day__home { color: var(--muted); }
 
 .mini__row--break.mini__row--current { color: var(--ink); font-size: 13px; }
+
+.tl-item--break .tl-item__dot { width: 6px; height: 6px; margin-top: 8px; }
+.tl-item--break .tl-item__name {
+  margin-top: 2px; font-size: 13px; font-weight: 400; font-style: italic; color: var(--muted);
+}
+.tl-item--break.tl-item--current .tl-item__name { font-size: 13px; font-weight: 800; color: var(--ink); }
+.tl-item--break .tl-item__body { padding-bottom: 13px; }
+.tl-item--break .mini__bar { margin: 6px 0 4px; }
+.tl-item--break .mini__note { margin: 0; }
