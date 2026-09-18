@@ -151,29 +151,12 @@ function currentLesson(state) {
 
 function timeline(state) {
   const active = currentLesson(state);
-  const items = state.lessons.map((lesson) => {
-    const isCurrent = active !== null && lesson.module === active.module;
-    const isDone = !isCurrent && lesson.to <= endReference(state);
-    const classes = [
-      'tl-item',
-      isCurrent ? 'tl-item--current' : '',
-      isCurrent && state.color === 'blue' ? 'tl-item--blue' : '',
-      isDone ? 'tl-item--done' : '',
-    ].filter(Boolean).join(' ');
+  const items = [];
 
-    return `
-      <div class="${classes}">
-        <div class="tl-item__gutter">
-          <div class="tl-item__dot"></div>
-          <div class="tl-item__line"></div>
-        </div>
-        <div class="tl-item__body">
-          <div class="tl-item__time">${toHHMM(lesson.from)} – ${toHHMM(lesson.to)} · модуль ${roman(lesson.module)}</div>
-          <div class="tl-item__name">${escapeHtml(lesson.subject)}</div>
-          <div class="tl-item__rooms">${rooms(lesson.teachers)}</div>
-          ${isCurrent ? miniModules(lesson, state) : ''}
-        </div>
-      </div>`;
+  state.lessons.forEach((lesson, index) => {
+    items.push(lessonItem(lesson, state, active));
+    const next = state.lessons[index + 1];
+    if (next) items.push(breakItem(lesson, next, state));
   });
 
   const last = state.lessons.at(-1);
@@ -187,6 +170,58 @@ function timeline(state) {
     </div>`);
 
   return `<div class="timeline">${items.join('')}</div>`;
+}
+
+function lessonItem(lesson, state, active) {
+  const isCurrent = active !== null && lesson.module === active.module;
+    const isDone = !isCurrent && lesson.to <= endReference(state);
+    const classes = [
+      'tl-item',
+      isCurrent ? 'tl-item--current' : '',
+      isCurrent && state.color === 'blue' ? 'tl-item--blue' : '',
+      isDone ? 'tl-item--done' : '',
+    ].filter(Boolean).join(' ');
+
+  return `
+      <div class="${classes}">
+        <div class="tl-item__gutter">
+          <div class="tl-item__dot"></div>
+          <div class="tl-item__line"></div>
+        </div>
+        <div class="tl-item__body">
+          <div class="tl-item__time">${toHHMM(lesson.from)} – ${toHHMM(lesson.to)} · модуль ${roman(lesson.module)}</div>
+          <div class="tl-item__name">${escapeHtml(lesson.subject)}</div>
+          <div class="tl-item__rooms">${rooms(lesson.teachers)}</div>
+          ${isCurrent ? miniModules(lesson, state) : ''}
+        </div>
+      </div>`;
+}
+
+// Перерва між модулями — такий самий рядок стрічки, як урок. Без неї день
+// стрибав би з 11:35 одразу на 12:00, і поточної перерви на екрані не було б
+// зовсім, а найпомітнішим лишався б урок, який ще не почався.
+function breakItem(previous, next, state) {
+  const gap = next.from - previous.to;
+  const isNow = state.kind === 'break-outer' && state.upcoming.module === next.module;
+  const classes = [
+    'tl-item',
+    'tl-item--break',
+    isNow ? 'tl-item--current' : '',
+    isNow && state.color === 'blue' ? 'tl-item--blue' : '',
+  ].filter(Boolean).join(' ');
+
+  return `
+      <div class="${classes}">
+        <div class="tl-item__gutter">
+          <div class="tl-item__dot"></div>
+          <div class="tl-item__line"></div>
+        </div>
+        <div class="tl-item__body">
+          <div class="tl-item__time">${toHHMM(previous.to)} – ${toHHMM(next.from)}</div>
+          <div class="tl-item__name">${breakLabel(gap).toLowerCase()} ${humanMinutes(gap)}</div>
+          ${isNow ? progress(gap - state.minutesLeft, gap) : ''}
+        </div>
+      </div>`;
 }
 
 function endReference(state) {

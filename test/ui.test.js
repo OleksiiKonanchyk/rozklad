@@ -55,3 +55,29 @@ describe('коротка перерва у стрічці дня', () => {
     expect(html()).toContain('минуло 2 хвилини із 5');
   });
 });
+
+// 9 вересня 2026 — між модулем II (до 11:35) і модулем III (з 12:00)
+// лежить велика перерва на 25 хвилин.
+describe('велика перерва у стрічці дня', () => {
+  const at = (h, m) => renderToday(stateAt(new Date(2026, 8, 9, h, m), data));
+
+  it('перерва між модулями є у стрічці навіть під час уроку', () => {
+    expect(at(10, 40)).toContain('велика перерва 25 хвилин');
+  });
+
+  it('під час уроку активний модуль, а не перерва', () => {
+    const html = at(10, 40);
+    expect(html.match(/tl-item--current/g) ?? []).toHaveLength(1);
+    expect(html).not.toMatch(/tl-item--break[^"]*tl-item--current/);
+  });
+
+  it('о 11:45 активна саме перерва', () => {
+    const html = at(11, 45);
+    expect(html.match(/tl-item--current/g) ?? []).toHaveLength(1);
+    expect(html).toMatch(/tl-item--break[^"]*tl-item--current/);
+  });
+
+  it('видно, скільки великої перерви минуло', () => {
+    expect(at(11, 45)).toContain('минуло 10 хвилин із 25');
+  });
+});
