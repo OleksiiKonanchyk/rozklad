@@ -18,22 +18,36 @@ describe('weekColorFor', () => {
     expect(weekColorFor(new Date(2026, 8, 14), data)).toBe('blue');
   });
 
-  it('канікулярний тиждень теж рахується', () => {
+  // Осінні канікули 26-30 жовтня — суцільний тиждень без жодного уроку.
+  // Школа такий тиждень пропускає: після нього йде той колір, якого ще не було.
+  it('тиждень суцільних канікул не бере участі в чергуванні', () => {
     expect(weekColorFor(new Date(2026, 9, 19), data)).toBe('yellow');
-    expect(weekColorFor(new Date(2026, 9, 26), data)).toBe('blue');
-    expect(weekColorFor(new Date(2026, 10, 2), data)).toBe('yellow');
+    expect(weekColorFor(new Date(2026, 10, 2), data)).toBe('blue');
+    expect(weekColorFor(new Date(2026, 10, 9), data)).toBe('yellow');
   });
 
-  it('тиждень перед опорним рахується назад по формулі', () => {
+  it('канікулярний тиждень показує колір того, що буде після нього', () => {
+    expect(weekColorFor(new Date(2026, 9, 26), data)).toBe('blue');
+  });
+
+  it('весняні канікули так само не збивають чергування', () => {
+    // 22-28 березня — теж суцільний тиждень, тож сусідні навчальні тижні
+    // мусять бути різного кольору, а не однакового.
+    const before = weekColorFor(new Date(2027, 2, 15), data);
+    const after = weekColorFor(new Date(2027, 2, 29), data);
+    expect(after).not.toBe(before);
+  });
+
+  it('тиждень перед опорним рахується назад', () => {
     expect(weekColorFor(new Date(2026, 7, 31), data)).toBe('blue');
-    expect(weekColorFor(new Date(2026, 7, 24), data)).toBe('yellow');
   });
 
   it('weekOverrides перекриває формулу', () => {
     const patched = { ...data, weekOverrides: { '2026-11-02': 'blue' } };
     expect(weekColorFor(new Date(2026, 10, 2), patched)).toBe('blue');
     expect(weekColorFor(new Date(2026, 10, 6), patched)).toBe('blue');
-    expect(weekColorFor(new Date(2026, 10, 9), patched)).toBe('blue');
+    // Виняток діє лише на свій тиждень — наступний знову за правилом.
+    expect(weekColorFor(new Date(2026, 10, 9), patched)).toBe('yellow');
   });
 });
 

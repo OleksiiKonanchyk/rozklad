@@ -134,7 +134,8 @@ describe('вихідні та канікули', () => {
     expect(s.kind).toBe('holiday');
     expect(s.holiday.name).toBe('Осінні канікули');
     expect(isoDate(s.nextDay.date)).toBe('2026-11-02');
-    expect(s.nextDay.color).toBe('yellow');
+    // Канікулярний тиждень пропускається, тож після нього — синій.
+    expect(s.nextDay.color).toBe('blue');
   });
 
   it('субота всередині канікул — це канікули, а не вихідні', () => {
@@ -163,7 +164,7 @@ describe('перемикання розкладів', () => {
 
   it('24.12 ще на старому розкладі', () => {
     const s = stateAt(new Date(2026, 11, 24, 10, 15), twoSchedules);
-    expect(s.color).toBe('blue'); // 21.12 — 15-й тиждень від опорного, непарний
+    expect(s.color).toBe('yellow'); // 21.12 — 14-й навчальний тиждень від опорного, парний
   });
 
   it('11.01 бере новий запис і його опорну дату', () => {
