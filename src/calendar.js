@@ -1,4 +1,4 @@
-import { isoDate, parseISO, mondayOf, addDays, daysBetween } from './format.js';
+import { isoDate, parseISO, mondayOf, addDays } from './format.js';
 import { scheduleFor } from './data.js';
 
 const SEARCH_LIMIT_DAYS = 400;
@@ -16,6 +16,23 @@ export function holidayFor(date, data) {
   return null;
 }
 
+function weekHasSchoolDay(monday, data) {
+  return [0, 1, 2, 3, 4].some((offset) => isSchoolDay(addDays(monday, offset), data));
+}
+
+// Тижні з хоч одним уроком у проміжку [from, to).
+function schoolWeeksBetween(from, to, data) {
+  let count = 0;
+  for (let m = from; isoDate(m) < isoDate(to); m = addDays(m, 7)) {
+    if (weekHasSchoolDay(m, data)) count++;
+  }
+  return count;
+}
+
+// Тиждень суцільних канікул не бере участі в чергуванні: школа повертається
+// на тому кольорі, якого ще не було. Тому рахуємо не всі тижні від опорного,
+// а лише навчальні. Канікулярному тижню при цьому дістається колір того, що
+// буде після нього, — саме це й показує вкладка «Тиждень» на канікулах.
 export function weekColorFor(date, data) {
   const monday = mondayOf(date);
   const override = data.weekOverrides[isoDate(monday)];
@@ -23,7 +40,9 @@ export function weekColorFor(date, data) {
 
   const { anchor } = scheduleFor(date, data);
   const anchorMonday = mondayOf(parseISO(anchor.weekStart));
-  const weeks = Math.round(daysBetween(anchorMonday, monday) / 7);
+  const weeks = isoDate(monday) >= isoDate(anchorMonday)
+    ? schoolWeeksBetween(anchorMonday, monday, data)
+    : -schoolWeeksBetween(monday, anchorMonday, data);
   const isEven = ((weeks % 2) + 2) % 2 === 0;
   const opposite = anchor.color === 'yellow' ? 'blue' : 'yellow';
   return isEven ? anchor.color : opposite;
