@@ -59,9 +59,12 @@ export function validateSchedule(raw) {
           if (typeof lesson.subject !== 'string' || lesson.subject.length === 0) {
             throw new Error(`schedule.json: у ${color}/${day}/${key} немає поля "subject"`);
           }
-          if (!Array.isArray(lesson.teachers) || lesson.teachers.length === 0) {
+          // Порожній список означає «ще не знаємо, хто веде»: урок уже є
+          // в розкладі, а вчителя школа ще не назвала. Саме поле лишається
+          // обовʼязковим, щоб його не забули просто не дописати.
+          if (!Array.isArray(lesson.teachers)) {
             throw new Error(
-              `schedule.json: у ${color}/${day}/${key} порожній або відсутній "teachers"`
+              `schedule.json: у ${color}/${day}/${key} немає або зіпсований "teachers"`
             );
           }
         }

@@ -42,9 +42,11 @@ describe('lessonsFor', () => {
   it('синій понеділок відрізняється від жовтого', () => {
     const yellow = lessonsFor(new Date(2026, 8, 7), data);
     const blue = lessonsFor(new Date(2026, 8, 14), data);
+    // Модулі ті самі, а предмети різні — саме тому колір тижня важливий.
     expect(yellow.map((l) => l.module)).toEqual([2, 3, 4]);
-    expect(blue.map((l) => l.module)).toEqual([3, 4]);
-    expect(blue[0].subject).toBe('Математика');
+    expect(blue.map((l) => l.module)).toEqual([2, 3, 4]);
+    expect(yellow[0].subject).toBe('Українська література');
+    expect(blue[0].subject).toBe('Еврика');
   });
 
   it('вихідні — порожньо', () => {

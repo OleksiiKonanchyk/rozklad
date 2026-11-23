@@ -63,16 +63,10 @@ describe('validateSchedule', () => {
     expect(() => validateSchedule(broken)).toThrow(/немає поля "subject"/);
   });
 
-  it('падає, якщо "teachers" порожній', () => {
-    const broken = structuredClone(real);
-    broken.schedules[0].weeks.yellow.mon['2'].teachers = [];
-    expect(() => validateSchedule(broken)).toThrow(/порожній або відсутній "teachers"/);
-  });
-
   it('падає, якщо "teachers" відсутній', () => {
     const broken = structuredClone(real);
     delete broken.schedules[0].weeks.yellow.mon['2'].teachers;
-    expect(() => validateSchedule(broken)).toThrow(/порожній або відсутній "teachers"/);
+    expect(() => validateSchedule(broken)).toThrow(/teachers/);
   });
 
   it('падає, якщо "holidays" не масив', () => {
@@ -113,5 +107,19 @@ describe('validateSchedule: значки предметів', () => {
     const without = { ...real };
     delete without.subjectIcons;
     expect(() => validateSchedule(without)).not.toThrow();
+  });
+});
+
+describe('validateSchedule: урок без учителя', () => {
+  it('порожній teachers дозволений — учитель ще не відомий', () => {
+    const patched = structuredClone(real);
+    patched.schedules[0].weeks.blue.mon['2'] = { subject: 'Еврика', teachers: [] };
+    expect(() => validateSchedule(patched)).not.toThrow();
+  });
+
+  it('але саме поле teachers лишається обовʼязковим', () => {
+    const broken = structuredClone(real);
+    broken.schedules[0].weeks.blue.mon['2'] = { subject: 'Еврика' };
+    expect(() => validateSchedule(broken)).toThrow(/teachers/);
   });
 });
