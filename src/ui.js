@@ -29,6 +29,7 @@ export function breakLabel(gap) {
 }
 
 function rooms(teachers) {
+  if (teachers.length === 0) return 'вчитель і кабінет уточнюються';
   return teachers
     .map((t) => `${escapeHtml(t.name)} — каб. ${escapeHtml(t.room)}`)
     .join('<br>');
@@ -36,6 +37,7 @@ function rooms(teachers) {
 
 // Компактний варіант для тижня: там питання «куди йти», а не «хто веде».
 function roomList(teachers) {
+  if (teachers.length === 0) return 'уточнюється';
   return `каб. ${teachers.map((t) => escapeHtml(t.room)).join(' і ')}`;
 }
 

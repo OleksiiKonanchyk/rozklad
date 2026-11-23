@@ -93,3 +93,20 @@ describe('значки предметів', () => {
     expect(renderWeek(data, state, 'yellow')).toMatch(/🇬🇧<\/span>Англійська мова/);
   });
 });
+
+// 14 вересня 2026 — синій понеділок. Другий модуль: Еврика, учитель і
+// кабінет ще не відомі.
+describe('урок без відомого вчителя', () => {
+  it('на екрані «Сьогодні» замість кабінету — що він уточнюється', () => {
+    const html = renderToday(stateAt(new Date(2026, 8, 14, 10, 15), data));
+    expect(html).toContain('Еврика');
+    expect(html).toContain('вчитель і кабінет уточнюються');
+  });
+
+  it('у тижневому розкладі — коротше, але теж без порожнього «каб.»', () => {
+    const state = stateAt(new Date(2026, 8, 14, 10, 15), data);
+    const html = renderWeek(data, state, 'blue');
+    expect(html).toContain('уточнюється');
+    expect(html).not.toMatch(/каб\. <\/b>/);
+  });
+});
